@@ -1,5 +1,32 @@
+'use client';
+
+import { useActionState } from 'react';
 import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { deleteInvoice } from '@/app/lib/actions';
+
+const initialDeleteState = { message: '' };
+
+async function deleteInvoiceAction(
+  _prevState: { message: string },
+  formData: FormData,
+) {
+  try {
+    const id = formData.get('id');
+
+    if (typeof id !== 'string' || !id) {
+      throw new Error('Missing invoice id.');
+    }
+
+    await deleteInvoice(id);
+    return { message: '' };
+  } catch (error) {
+    return {
+      message:
+        error instanceof Error ? error.message : 'Failed to delete invoice.',
+    };
+  }
+}
 
 export function CreateInvoice() {
   return (
@@ -16,7 +43,7 @@ export function CreateInvoice() {
 export function UpdateInvoice({ id }: { id: string }) {
   return (
     <Link
-      href="/dashboard/invoices"
+      href={`/dashboard/invoices/${id}/edit`}
       className="rounded-md border p-2 hover:bg-gray-100"
     >
       <PencilIcon className="w-5" />
@@ -25,12 +52,25 @@ export function UpdateInvoice({ id }: { id: string }) {
 }
 
 export function DeleteInvoice({ id }: { id: string }) {
+  const [state, formAction, pending] = useActionState(
+    deleteInvoiceAction,
+    initialDeleteState,
+  );
+
   return (
-    <>
-      <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
+    <form action={formAction} className="flex items-center gap-2">
+      <input type="hidden" name="id" value={id} />
+      {state.message ? (
+        <p className="text-sm text-red-600">{state.message}</p>
+      ) : null}
+      <button
+        type="submit"
+        disabled={pending}
+        className="rounded-md border p-2 hover:bg-gray-100 disabled:cursor-not-allowed"
+      >
         <span className="sr-only">Delete</span>
         <TrashIcon className="w-5" />
       </button>
-    </>
+    </form>
   );
 }

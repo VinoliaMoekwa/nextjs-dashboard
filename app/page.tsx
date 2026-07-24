@@ -4,7 +4,11 @@ import Link from 'next/link';
 import styles from '@/app/ui/home.module.css';
 import Image from 'next/image';
 import { fetchRevenue, fetchLatestInvoices } from '@/app/lib/data';
+ import { Metadata } from 'next';
  
+export const metadata: Metadata = {
+  title: 'Invoices | Acme Dashboard',
+};
 
 
 export default function Page() {
